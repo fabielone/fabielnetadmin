@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
-import { formatDateTime, formatCurrency } from '@/lib/utils'
+import { formatDateTime } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -19,9 +19,7 @@ import {
   Building2, 
   Users, 
   FileText, 
-  AlertTriangle,
   Calendar,
-  MapPin,
   Mail,
   Phone,
   ExternalLink 

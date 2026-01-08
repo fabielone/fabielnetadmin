@@ -2,7 +2,6 @@ import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { formatCurrency, formatDateTime, getStatusColor, getPriorityColor } from '@/lib/utils'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select } from '@/components/ui/select'
@@ -14,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Eye, Plus } from 'lucide-react'
+import { Eye } from 'lucide-react'
 import type { OrderListItem } from '@/lib/types'
 
 interface OrdersPageProps {

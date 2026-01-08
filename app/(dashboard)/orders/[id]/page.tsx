@@ -12,11 +12,7 @@ import {
   User, 
   Mail, 
   Phone, 
-  MapPin,
   FileText,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
 } from 'lucide-react'
 import { OrderStatusForm } from './OrderStatusForm'
 import { OrderProgressForm } from './OrderProgressForm'

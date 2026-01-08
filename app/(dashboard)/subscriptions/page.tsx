@@ -15,7 +15,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Eye } from 'lucide-react'
-import type { SubscriptionListItem, WebsiteSubscriptionItem, SubscriptionIntentItem } from '@/lib/types'
 
 interface RaSubscription {
   id: string

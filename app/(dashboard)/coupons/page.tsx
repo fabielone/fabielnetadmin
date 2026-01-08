@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Plus, Edit, Trash2, Ticket, Copy } from 'lucide-react'
+import { Plus, Edit, Trash2, Ticket } from 'lucide-react'
 import { revalidatePath } from 'next/cache'
 
 interface CouponItem {

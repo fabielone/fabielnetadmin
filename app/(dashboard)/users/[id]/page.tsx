@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { formatDateTime, formatCurrency, getStatusColor } from '@/lib/utils'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -16,7 +16,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { getInitials } from '@/lib/utils'
-import { ArrowLeft, Mail, Phone, MapPin, Calendar, Shield, Building2 } from 'lucide-react'
+import { ArrowLeft, Mail, Phone, MapPin, Shield, Building2 } from 'lucide-react'
 
 interface UserOrder {
   id: string
