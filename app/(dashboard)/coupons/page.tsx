@@ -64,9 +64,9 @@ export default async function CouponsPage() {
     orderBy: { createdAt: 'desc' },
   })
 
-  const activeCoupons = coupons.filter((c) => c.isActive)
-  const expiredCoupons = coupons.filter((c) => c.expiresAt && new Date(c.expiresAt) < new Date())
-  const totalRedemptions = coupons.reduce((sum, c) => sum + c.usedCount, 0)
+  const activeCoupons = coupons.filter((c: { isActive: boolean }) => c.isActive)
+  const expiredCoupons = coupons.filter((c: { expiresAt: Date | null }) => c.expiresAt && new Date(c.expiresAt) < new Date())
+  const totalRedemptions = coupons.reduce((sum: number, c: { usedCount: number }) => sum + c.usedCount, 0)
 
   const getCouponStatus = (coupon: CouponItem) => {
     if (!coupon.isActive) return { label: 'Inactive', variant: 'secondary' as const }

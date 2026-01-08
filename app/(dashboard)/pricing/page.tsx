@@ -13,7 +13,7 @@ import {
 } from '@/components/ui/table'
 import { Switch } from '@/components/ui/switch'
 import { revalidatePath } from 'next/cache'
-import { EditServiceDialog, EditStateFeeDialog, EditRaPricingDialog } from './PricingEditDialogs'
+import { EditServiceDialog, EditStateFeeDialog, EditRaPricingDialog, EditWebsitePricingDialog } from './PricingEditDialogs'
 
 interface ServicePricingItem {
   id: string
@@ -52,6 +52,27 @@ interface RaPricingItem {
   isActive: boolean
 }
 
+interface WebsitePricingItem {
+  id: string
+  tier: string
+  tierName: string
+  description: string | null
+  monthlyPrice: { toNumber: () => number }
+  yearlyPrice: { toNumber: () => number } | null
+  setupFee: { toNumber: () => number }
+  features: string | null
+  pagesIncluded: number
+  blogEnabled: boolean
+  ecommerceEnabled: boolean
+  customDomain: boolean
+  sslIncluded: boolean
+  analyticsIncluded: boolean
+  supportLevel: string
+  isActive: boolean
+  isPopular: boolean
+  sortOrder: number
+}
+
 async function toggleServiceActive(formData: FormData) {
   'use server'
   
@@ -87,6 +108,20 @@ async function toggleRaPricingActive(formData: FormData) {
   const isActive = formData.get('isActive') === 'true'
   
   await prisma.registeredAgentPricing.update({
+    where: { id },
+    data: { isActive: !isActive },
+  })
+  
+  revalidatePath('/pricing')
+}
+
+async function toggleWebsitePricingActive(formData: FormData) {
+  'use server'
+  
+  const id = formData.get('id') as string
+  const isActive = formData.get('isActive') === 'true'
+  
+  await prisma.websitePricing.update({
     where: { id },
     data: { isActive: !isActive },
   })
@@ -180,8 +215,96 @@ async function updateRaPricing(formData: FormData) {
   revalidatePath('/pricing')
 }
 
+async function updateWebsitePricing(formData: FormData) {
+  'use server'
+  
+  const id = formData.get('id') as string
+  const tierName = formData.get('tierName') as string
+  const description = formData.get('description') as string
+  const monthlyPrice = parseFloat(formData.get('monthlyPrice') as string)
+  const yearlyPrice = formData.get('yearlyPrice') as string
+  const setupFee = parseFloat(formData.get('setupFee') as string || '0')
+  const features = formData.get('features') as string
+  const pagesIncluded = parseInt(formData.get('pagesIncluded') as string || '5')
+  const blogEnabled = formData.get('blogEnabled') === 'true'
+  const ecommerceEnabled = formData.get('ecommerceEnabled') === 'true'
+  const customDomain = formData.get('customDomain') === 'true'
+  const sslIncluded = formData.get('sslIncluded') === 'true'
+  const analyticsIncluded = formData.get('analyticsIncluded') === 'true'
+  const supportLevel = formData.get('supportLevel') as string
+  const isPopular = formData.get('isPopular') === 'true'
+  const sortOrder = parseInt(formData.get('sortOrder') as string || '0')
+  
+  await prisma.websitePricing.update({
+    where: { id },
+    data: {
+      tierName,
+      description: description || null,
+      monthlyPrice,
+      yearlyPrice: yearlyPrice ? parseFloat(yearlyPrice) : null,
+      setupFee,
+      features: features || null,
+      pagesIncluded,
+      blogEnabled,
+      ecommerceEnabled,
+      customDomain,
+      sslIncluded,
+      analyticsIncluded,
+      supportLevel,
+      isPopular,
+      sortOrder,
+    },
+  })
+  
+  revalidatePath('/pricing')
+}
+
+async function createWebsitePricing(formData: FormData) {
+  'use server'
+  
+  const tier = formData.get('tier') as string
+  const tierName = formData.get('tierName') as string
+  const description = formData.get('description') as string
+  const monthlyPrice = parseFloat(formData.get('monthlyPrice') as string)
+  const yearlyPrice = formData.get('yearlyPrice') as string
+  const setupFee = parseFloat(formData.get('setupFee') as string || '0')
+  const features = formData.get('features') as string
+  const pagesIncluded = parseInt(formData.get('pagesIncluded') as string || '5')
+  const blogEnabled = formData.get('blogEnabled') === 'true'
+  const ecommerceEnabled = formData.get('ecommerceEnabled') === 'true'
+  const customDomain = formData.get('customDomain') === 'true'
+  const sslIncluded = formData.get('sslIncluded') === 'true'
+  const analyticsIncluded = formData.get('analyticsIncluded') === 'true'
+  const supportLevel = formData.get('supportLevel') as string || 'email'
+  const isPopular = formData.get('isPopular') === 'true'
+  const sortOrder = parseInt(formData.get('sortOrder') as string || '0')
+  
+  await prisma.websitePricing.create({
+    data: {
+      tier: tier as never,
+      tierName,
+      description: description || null,
+      monthlyPrice,
+      yearlyPrice: yearlyPrice ? parseFloat(yearlyPrice) : null,
+      setupFee,
+      features: features || null,
+      pagesIncluded,
+      blogEnabled,
+      ecommerceEnabled,
+      customDomain,
+      sslIncluded,
+      analyticsIncluded,
+      supportLevel,
+      isPopular,
+      sortOrder,
+    },
+  })
+  
+  revalidatePath('/pricing')
+}
+
 export default async function PricingPage() {
-  const [services, stateFees, raPricing] = await Promise.all([
+  const [services, stateFees, raPricing, websitePricing] = await Promise.all([
     prisma.servicePricing.findMany({
       orderBy: { serviceName: 'asc' },
     }),
@@ -191,10 +314,14 @@ export default async function PricingPage() {
     prisma.registeredAgentPricing.findMany({
       orderBy: { stateCode: 'asc' },
     }),
+    prisma.websitePricing.findMany({
+      orderBy: { sortOrder: 'asc' },
+    }),
   ])
 
-  const activeServicesCount = services.filter((s) => s.isActive).length
-  const activeStatesCount = stateFees.filter((s) => s.isActive).length
+  const activeServicesCount = services.filter((s: { isActive: boolean }) => s.isActive).length
+  const activeStatesCount = stateFees.filter((s: { isActive: boolean }) => s.isActive).length
+  const activeWebsiteTiersCount = websitePricing.filter((w: { isActive: boolean }) => w.isActive).length
 
   return (
     <div className="space-y-6">
@@ -206,7 +333,7 @@ export default async function PricingPage() {
       </div>
 
       {/* Overview Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
@@ -246,6 +373,19 @@ export default async function PricingPage() {
             </p>
           </CardContent>
         </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Website Tiers
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{websitePricing.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {activeWebsiteTiersCount} active tiers
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       <Tabs defaultValue="services">
@@ -253,6 +393,7 @@ export default async function PricingPage() {
           <TabsTrigger value="services">Services</TabsTrigger>
           <TabsTrigger value="state-fees">State Filing Fees</TabsTrigger>
           <TabsTrigger value="ra-pricing">Registered Agent</TabsTrigger>
+          <TabsTrigger value="website-pricing">Website Services</TabsTrigger>
         </TabsList>
 
         {/* Services Tab */}
@@ -529,6 +670,120 @@ export default async function PricingPage() {
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         No registered agent pricing configured
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Website Services Tab */}
+        <TabsContent value="website-pricing" className="space-y-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle>Website Service Pricing</CardTitle>
+                <CardDescription>
+                  Configure pricing tiers for website services (Basic, Pro, Growth)
+                </CardDescription>
+              </div>
+              <EditWebsitePricingDialog
+                isNew={true}
+                onSave={createWebsitePricing}
+              />
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Tier</TableHead>
+                    <TableHead>Monthly Price</TableHead>
+                    <TableHead>Yearly Price</TableHead>
+                    <TableHead>Setup Fee</TableHead>
+                    <TableHead>Features</TableHead>
+                    <TableHead>Active</TableHead>
+                    <TableHead className="w-[50px]"></TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {(websitePricing as WebsitePricingItem[]).map((wp) => (
+                    <TableRow key={wp.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{wp.tierName}</p>
+                          {wp.isPopular && (
+                            <Badge variant="default">Popular</Badge>
+                          )}
+                        </div>
+                        <code className="text-xs text-muted-foreground">{wp.tier}</code>
+                      </TableCell>
+                      <TableCell className="font-medium">
+                        {formatCurrency(wp.monthlyPrice.toNumber())}/mo
+                      </TableCell>
+                      <TableCell>
+                        {wp.yearlyPrice ? (
+                          <span>{formatCurrency(wp.yearlyPrice.toNumber())}/yr</span>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {wp.setupFee.toNumber() > 0 ? (
+                          formatCurrency(wp.setupFee.toNumber())
+                        ) : (
+                          <span className="text-muted-foreground">Free</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-1">
+                          <Badge variant="secondary">{wp.pagesIncluded} pages</Badge>
+                          {wp.blogEnabled && <Badge variant="secondary">Blog</Badge>}
+                          {wp.ecommerceEnabled && <Badge variant="secondary">E-commerce</Badge>}
+                          {wp.analyticsIncluded && <Badge variant="secondary">Analytics</Badge>}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <form action={toggleWebsitePricingActive}>
+                          <input type="hidden" name="id" value={wp.id} />
+                          <input type="hidden" name="isActive" value={String(wp.isActive)} />
+                          <button type="submit">
+                            <Switch checked={wp.isActive} />
+                          </button>
+                        </form>
+                      </TableCell>
+                      <TableCell>
+                        <EditWebsitePricingDialog
+                          websitePricing={{
+                            id: wp.id,
+                            tier: wp.tier,
+                            tierName: wp.tierName,
+                            description: wp.description,
+                            monthlyPrice: wp.monthlyPrice.toNumber(),
+                            yearlyPrice: wp.yearlyPrice?.toNumber() ?? null,
+                            setupFee: wp.setupFee.toNumber(),
+                            features: wp.features,
+                            pagesIncluded: wp.pagesIncluded,
+                            blogEnabled: wp.blogEnabled,
+                            ecommerceEnabled: wp.ecommerceEnabled,
+                            customDomain: wp.customDomain,
+                            sslIncluded: wp.sslIncluded,
+                            analyticsIncluded: wp.analyticsIncluded,
+                            supportLevel: wp.supportLevel,
+                            isActive: wp.isActive,
+                            isPopular: wp.isPopular,
+                            sortOrder: wp.sortOrder,
+                          }}
+                          onSave={updateWebsitePricing}
+                        />
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {websitePricing.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                        No website pricing tiers configured. Click &quot;Add Tier&quot; to create one.
                       </TableCell>
                     </TableRow>
                   )}

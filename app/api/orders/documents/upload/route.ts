@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
       })
 
       const isCompleted = (type: string) => {
-        const event = updatedEvents.find(e => e.eventType === type)
+        const event = updatedEvents.find((e: any) => e.eventType === type)
         return event?.completedAt !== null && event?.completedAt !== undefined
       }
 

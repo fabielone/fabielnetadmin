@@ -478,3 +478,270 @@ export function EditRaPricingDialog({ raPricing, onSave }: EditRaPricingDialogPr
     </Dialog>
   )
 }
+
+// Website Pricing Edit Dialog
+interface WebsitePricingData {
+  id: string
+  tier: string
+  tierName: string
+  description: string | null
+  monthlyPrice: number
+  yearlyPrice: number | null
+  setupFee: number
+  features: string | null
+  pagesIncluded: number
+  blogEnabled: boolean
+  ecommerceEnabled: boolean
+  customDomain: boolean
+  sslIncluded: boolean
+  analyticsIncluded: boolean
+  supportLevel: string
+  isActive: boolean
+  isPopular: boolean
+  sortOrder: number
+}
+
+interface EditWebsitePricingDialogProps {
+  websitePricing?: WebsitePricingData
+  isNew?: boolean
+  onSave: (formData: FormData) => Promise<void>
+}
+
+export function EditWebsitePricingDialog({ websitePricing, isNew, onSave }: EditWebsitePricingDialogProps) {
+  const [open, setOpen] = useState(false)
+  const [blogEnabled, setBlogEnabled] = useState(websitePricing?.blogEnabled ?? false)
+  const [ecommerceEnabled, setEcommerceEnabled] = useState(websitePricing?.ecommerceEnabled ?? false)
+  const [customDomain, setCustomDomain] = useState(websitePricing?.customDomain ?? true)
+  const [sslIncluded, setSslIncluded] = useState(websitePricing?.sslIncluded ?? true)
+  const [analyticsIncluded, setAnalyticsIncluded] = useState(websitePricing?.analyticsIncluded ?? true)
+  const [isPopular, setIsPopular] = useState(websitePricing?.isPopular ?? false)
+  const [isPending, setIsPending] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsPending(true)
+    const formData = new FormData(e.currentTarget)
+    formData.set('blogEnabled', String(blogEnabled))
+    formData.set('ecommerceEnabled', String(ecommerceEnabled))
+    formData.set('customDomain', String(customDomain))
+    formData.set('sslIncluded', String(sslIncluded))
+    formData.set('analyticsIncluded', String(analyticsIncluded))
+    formData.set('isPopular', String(isPopular))
+    await onSave(formData)
+    setIsPending(false)
+    setOpen(false)
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        {isNew ? (
+          <Button>Add Tier</Button>
+        ) : (
+          <Button variant="ghost" size="icon">
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <form onSubmit={handleSubmit}>
+          <DialogHeader>
+            <DialogTitle>{isNew ? 'Add Website Pricing Tier' : 'Edit Website Pricing'}</DialogTitle>
+            <DialogDescription>
+              {isNew ? 'Create a new website service pricing tier' : `Update pricing for ${websitePricing?.tierName}`}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            {!isNew && <input type="hidden" name="id" value={websitePricing?.id} />}
+            
+            {isNew && (
+              <div className="grid gap-2">
+                <Label htmlFor="tier">Tier Code</Label>
+                <select
+                  id="tier"
+                  name="tier"
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  required
+                >
+                  <option value="BASIC">BASIC</option>
+                  <option value="PRO">PRO</option>
+                  <option value="GROWTH">GROWTH</option>
+                </select>
+              </div>
+            )}
+            
+            <div className="grid gap-2">
+              <Label htmlFor="tierName">Tier Display Name</Label>
+              <Input
+                id="tierName"
+                name="tierName"
+                defaultValue={websitePricing?.tierName || ''}
+                placeholder="e.g., Basic, Professional, Growth"
+                required
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                name="description"
+                defaultValue={websitePricing?.description || ''}
+                placeholder="Brief description of this tier"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="monthlyPrice">Monthly Price ($)</Label>
+                <Input
+                  id="monthlyPrice"
+                  name="monthlyPrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  defaultValue={websitePricing?.monthlyPrice || ''}
+                  required
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="yearlyPrice">Yearly Price ($)</Label>
+                <Input
+                  id="yearlyPrice"
+                  name="yearlyPrice"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  defaultValue={websitePricing?.yearlyPrice || ''}
+                  placeholder="Optional"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="setupFee">Setup Fee ($)</Label>
+                <Input
+                  id="setupFee"
+                  name="setupFee"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  defaultValue={websitePricing?.setupFee || 0}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="pagesIncluded">Pages Included</Label>
+                <Input
+                  id="pagesIncluded"
+                  name="pagesIncluded"
+                  type="number"
+                  min="1"
+                  defaultValue={websitePricing?.pagesIncluded || 5}
+                />
+              </div>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="features">Features (one per line)</Label>
+              <Textarea
+                id="features"
+                name="features"
+                defaultValue={websitePricing?.features || ''}
+                placeholder="Custom design&#10;Mobile responsive&#10;SEO optimized"
+                rows={4}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="supportLevel">Support Level</Label>
+                <select
+                  id="supportLevel"
+                  name="supportLevel"
+                  defaultValue={websitePricing?.supportLevel || 'email'}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                >
+                  <option value="email">Email Support</option>
+                  <option value="chat">Chat Support</option>
+                  <option value="phone">Phone Support</option>
+                  <option value="priority">Priority Support</option>
+                  <option value="dedicated">Dedicated Support</option>
+                </select>
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="sortOrder">Sort Order</Label>
+                <Input
+                  id="sortOrder"
+                  name="sortOrder"
+                  type="number"
+                  min="0"
+                  defaultValue={websitePricing?.sortOrder || 0}
+                />
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="blogEnabled">Blog Enabled</Label>
+                <Switch
+                  id="blogEnabled"
+                  checked={blogEnabled}
+                  onCheckedChange={setBlogEnabled}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="ecommerceEnabled">E-commerce Enabled</Label>
+                <Switch
+                  id="ecommerceEnabled"
+                  checked={ecommerceEnabled}
+                  onCheckedChange={setEcommerceEnabled}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="customDomain">Custom Domain</Label>
+                <Switch
+                  id="customDomain"
+                  checked={customDomain}
+                  onCheckedChange={setCustomDomain}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="sslIncluded">SSL Included</Label>
+                <Switch
+                  id="sslIncluded"
+                  checked={sslIncluded}
+                  onCheckedChange={setSslIncluded}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="analyticsIncluded">Analytics Included</Label>
+                <Switch
+                  id="analyticsIncluded"
+                  checked={analyticsIncluded}
+                  onCheckedChange={setAnalyticsIncluded}
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="isPopular">Mark as Popular</Label>
+                <Switch
+                  id="isPopular"
+                  checked={isPopular}
+                  onCheckedChange={setIsPopular}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button type="submit" disabled={isPending}>
+              {isPending ? 'Saving...' : isNew ? 'Create Tier' : 'Save Changes'}
+            </Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
+  )
+}

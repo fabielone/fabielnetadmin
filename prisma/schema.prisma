@@ -317,6 +317,33 @@ model ServicePricing {
   @@map("service_pricing")
 }
 
+model WebsitePricing {
+  id                 String             @id @default(cuid())
+  tier               WebsiteServiceTier @unique @map("tier")
+  tierName           String             @map("tier_name")
+  description        String?
+  monthlyPrice       Decimal            @map("monthly_price") @db.Decimal(10, 2)
+  yearlyPrice        Decimal?           @map("yearly_price") @db.Decimal(10, 2)
+  setupFee           Decimal            @default(0.00) @map("setup_fee") @db.Decimal(10, 2)
+  features           String?            // JSON array of feature strings
+  pagesIncluded      Int                @default(5) @map("pages_included")
+  blogEnabled        Boolean            @default(false) @map("blog_enabled")
+  ecommerceEnabled   Boolean            @default(false) @map("ecommerce_enabled")
+  customDomain       Boolean            @default(true) @map("custom_domain")
+  sslIncluded        Boolean            @default(true) @map("ssl_included")
+  analyticsIncluded  Boolean            @default(true) @map("analytics_included")
+  supportLevel       String             @default("email") @map("support_level")
+  isActive           Boolean            @default(true) @map("is_active")
+  isPopular          Boolean            @default(false) @map("is_popular")
+  sortOrder          Int                @default(0) @map("sort_order")
+  stripePriceId      String?            @map("stripe_price_id")
+  stripeYearlyPriceId String?           @map("stripe_yearly_price_id")
+  createdAt          DateTime           @default(now()) @map("created_at")
+  updatedAt          DateTime           @updatedAt @map("updated_at")
+
+  @@map("website_pricing")
+}
+
 model Order {
   id                          String                 @id @default(cuid())
   orderId                     String                 @unique @map("order_id")
