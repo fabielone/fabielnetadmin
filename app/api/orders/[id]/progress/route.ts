@@ -37,7 +37,7 @@ export async function POST(
     }
 
     // Update or create progress event
-    const existingEvent = order.progressEvents.find((e: any) => e.eventType === eventType)
+    const existingEvent = order.progressEvents.find((e: { eventType: string }) => e.eventType === eventType)
 
     if (existingEvent) {
       await prisma.orderProgressEvent.update({
@@ -65,7 +65,7 @@ export async function POST(
     })
 
     const isCompleted = (type: string) => {
-      const event = updatedEvents.find((e: any) => e.eventType === type)
+      const event = updatedEvents.find((e: { eventType: string; completedAt: Date | null }) => e.eventType === type)
       return event?.completedAt !== null && event?.completedAt !== undefined
     }
 
