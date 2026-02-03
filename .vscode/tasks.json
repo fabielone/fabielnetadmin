@@ -1,0 +1,30 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "shell",
+			"command": "pnpm build",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "pnpm: build",
+			"detail": "prisma generate && next build"
+		},
+		{
+			"type": "shell",
+			"command": "pnpm lint",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "pnpm: lint",
+			"detail": "Run ESLint"
+		},
+		{
+			"type": "shell",
+			"command": "pnpm dev",
+			"group": "build",
+			"problemMatcher": [],
+			"label": "pnpm: dev",
+			"detail": "Start development server",
+			"isBackground": true
+		}
+	]
+}

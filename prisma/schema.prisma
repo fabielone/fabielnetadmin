@@ -1376,3 +1376,29 @@ model AdminActivityLog {
 
   @@map("admin_activity_logs")
 }
+
+// Admin notifications for real-time alerts
+model AdminNotification {
+  id          String                  @id @default(cuid())
+  type        AdminNotificationType
+  title       String
+  message     String
+  resourceId  String?                 @map("resource_id")
+  resourceUrl String?                 @map("resource_url")
+  isRead      Boolean                 @default(false) @map("is_read")
+  metadata    Json?
+  createdAt   DateTime                @default(now()) @map("created_at")
+
+  @@index([isRead, createdAt])
+  @@map("admin_notifications")
+}
+
+enum AdminNotificationType {
+  ORDER_CREATED    @map("order_created")
+  ORDER_CANCELLED  @map("order_cancelled")
+  ORDER_COMPLETED  @map("order_completed")
+  PAYMENT_RECEIVED @map("payment_received")
+  PAYMENT_FAILED   @map("payment_failed")
+  USER_REGISTERED  @map("user_registered")
+  SYSTEM_ALERT     @map("system_alert")
+}

@@ -1,6 +1,6 @@
 'use client'
 
-import { Menu, Bell, LogOut, User } from 'lucide-react'
+import { Menu, LogOut, User } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import {
   DropdownMenu,
@@ -10,8 +10,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
 import { getInitials } from '@/lib/utils'
+import { NotificationDropdown } from './NotificationDropdown'
 
 interface HeaderProps {
   onMenuClick: () => void
@@ -42,12 +42,7 @@ export function Header({ onMenuClick, user }: HeaderProps) {
 
       <div className="flex items-center gap-4">
         {/* Notifications */}
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5" />
-          <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-destructive text-[10px] font-medium text-destructive-foreground flex items-center justify-center">
-            3
-          </span>
-        </Button>
+        <NotificationDropdown />
 
         {/* User menu */}
         <div className="relative">

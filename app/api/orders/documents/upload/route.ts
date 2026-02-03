@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import prisma from '@/lib/prisma'
-import { uploadImage } from '@/lib/cloudinary'
+import { uploadDocument } from '@/lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -45,15 +45,17 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Convert file to buffer and upload to Cloudinary
+    // Convert file to buffer and upload to Supabase Storage
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
 
-    // Upload to cloudinary
-    const uploadResult = await uploadImage(buffer, {
-      folder: `orders/${orderId}/documents`,
-      publicId: `${documentType}_${Date.now()}`,
-    })
+    // Generate unique filename with timestamp
+    const timestamp = Date.now()
+    const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+    const storagePath = `orders/${orderId}/${documentType}_${timestamp}_${sanitizedFileName}`
+
+    // Upload to Supabase Storage
+    const uploadResult = await uploadDocument(buffer, storagePath, file.type)
 
     // Mark any existing documents of this type as not latest
     await prisma.document.updateMany({
@@ -67,13 +69,14 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Create document record
+    // Create document record - store relative path, not full URL
+    // The frontend will generate signed URLs for private bucket access
     const document = await prisma.document.create({
       data: {
         orderId,
         documentType: documentType as never,
         fileName: file.name,
-        filePath: uploadResult.url,
+        filePath: uploadResult.path,  // Store relative path, not publicUrl
         fileSize: file.size,
         isLatest: true,
         isFinal: true,
